@@ -8,37 +8,41 @@ import 'package:http/http.dart' as http;
 
 // ignore: must_be_immutable
 class QuotesScreen extends StatelessWidget {
-  List quotes = [];
+  final String name;
 
   // QuotesScreen constructor
-  QuotesScreen({Key? key}) : super(key: key);
+  const QuotesScreen({Key? key, required this.name}) : super(key: key);
 
   // fetchQuotes method
-  Future<List> fetchQuote() async {
-    // url to be used in the request + quotes variable
-    const url = 'https://breakingbadapi.com/api/quotes';
-
-    // request to be sent
-    try {
-      // response from request
-      final response = await http.get(
-        Uri.parse(url),
-      );
-      // check response status
-      if (response.statusCode == 200) {
-        // parse json
-        final jsonQuotes = json.decode(response.body);
-        // iterate over json quotes
-        for (var jsonQuote in jsonQuotes) {
-          quotes.add(jsonQuotes[jsonQuote]['quote']);
-        }
-        // return quotes
-        return quotes;
-      } else {
-        // throw error to catch
-        throw Exception('Failed to load quotes');
+  Future<List<String>> fetchQuote(String name) async {
+    // all names from api
+    final names = name.split(' ');
+    // format authorName for api
+    final authorName = names.join('+');
+    // get response
+    final response = await http.get(
+      Uri.parse(
+        'https://breakingbadapi.com/api/quote?author=$authorName',
+      ),
+    );
+    // check response status
+    if (response.statusCode == 200) {
+      final quotes = json.decode(response.body);
+      List<String> quotesList = [];
+      // iterate over quotes
+      for (var quote in quotes) {
+        // add quote to list
+        quotesList.add(quote['quote']);
       }
-    } catch (e) {
+      // check if quotes list is empty
+      if (quotesList.isEmpty) {
+        // add error string to quotesList and return
+        quotesList.add('No quotes found');
+        return quotesList;
+      }
+      // else, return quotes list
+      return quotesList;
+    } else {
       // throw error
       throw Exception('Failed to load quotes');
     }
@@ -49,7 +53,7 @@ class QuotesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Breaking Bad Quotes'),
+        title: Text('$name Quotes'),
         // navigate back to home screen
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -57,44 +61,39 @@ class QuotesScreen extends StatelessWidget {
         ),
       ),
       body: FutureBuilder<List>(
-        future: fetchQuote(),
-        builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
+        future: fetchQuote(name),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
           // check snapshot status
           if (snapshot.connectionState == ConnectionState.waiting) {
             // center widget with circular progress indicator
             return const Center(
               child: CircularProgressIndicator(),
             );
-            // if no data in snapshot
-          }
-          if (snapshot.data == null) {
-            // show error message
-            return const Center(
-              child: Text('Error'),
-            );
-            // if has data
+            // if state is done, check for error
+          } else if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              // if has error, show error message
+              return const Center(
+                child: Text('Error'),
+              );
+            } else {
+              // no error, show quotes
+              return ListView.builder(
+                itemCount: snapshot.data?.length,
+                itemBuilder: (BuildContext context, int index) {
+                  // return quote card
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(snapshot.data?[index]),
+                    ),
+                  );
+                },
+              );
+            }
           } else {
-            // return list view with quotes
-            return ListView.builder(
-              itemCount: snapshot.data?.length,
-              itemBuilder: (BuildContext context, int index) {
-                // get quote
-                final quote = snapshot.data?[index];
-                // return quote
-                return ListView.builder(
-                  itemCount: quote?.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Text(
-                      quote[index]['quote'],
-                      style: const TextStyle(
-                        fontSize: 18,
-                      ),
-                    );
-                  },
-                );
-              },
-              padding: const EdgeInsets.all(12),
-            );
+            // throw error
+            throw Exception('Failed to load quotes');
           }
         },
       ),

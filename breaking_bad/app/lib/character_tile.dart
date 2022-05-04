@@ -13,16 +13,18 @@ class CharacterTile extends StatelessWidget {
     required this.character,
   }) : super(key: key);
 
-  // build method
   @override
   Widget build(BuildContext context) {
-    // on tap, navigate to quotes screen
-    return GestureDetector(
+    return GridTile(
+      child: GestureDetector(
         onTap: () {
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => QuotesScreen()));
+            context,
+            MaterialPageRoute(
+              builder: (context) => QuotesScreen(name: character.name),
+            ),
+          );
         },
-        // character tile
         child: Container(
           padding: const EdgeInsets.all(8),
           // image
@@ -41,6 +43,8 @@ class CharacterTile extends StatelessWidget {
               style: const TextStyle(color: Colors.white),
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

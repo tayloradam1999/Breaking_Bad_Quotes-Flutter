@@ -96,7 +96,7 @@ class HomeScreenState extends State<HomeScreen> {
               itemBuilder: (BuildContext contex, int index) {
                 // return CharacterTile widget
                 return CharacterTile(
-                  character: snapshot.data[index],
+                  character: snapshot.data?[index],
                 );
               },
               // add padding to gridview
