@@ -1,3 +1,4 @@
+import 'package:app/quotes_screen.dart';
 import 'package:flutter/material.dart';
 import 'character_tile.dart';
 import 'models.dart';
