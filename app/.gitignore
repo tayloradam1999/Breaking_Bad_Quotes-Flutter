@@ -30,6 +30,20 @@
 .pub-cache/
 .pub/
 /build/
+/android/
+/ios/
+/test/
+/web/
+/windows/
+.flutter-plugins/
+.flutter-plugins-dependencies/
+/.idea/
+/.dart_tool/
+.metadata
+.packages
+analysis_options.yaml
+pubspec.lock
+twitter.iml
 
 # Web related
 lib/generated_plugin_registrant.dart
